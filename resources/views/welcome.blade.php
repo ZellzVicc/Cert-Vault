@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}?v=2">
-    <link rel="shortcut icon" href="{{ asset('favicon.png') }}?v=2">
-
-    <title>CERT-VAULT</title>
+    <title>CERT VAULT SYSTEM</title>
 
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -17,64 +15,92 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.3s ease; }
-        .dark { background: #020617; color: #f8fafc; }
-        .light { background: #f1f5f9; color: #0f172a; }
-        .glass-dark { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); }
-        .glass-light { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(0,0,0,0.05); }
-        .danger-pulse { animation: pulse-red 1.5s infinite; }
-        @keyframes pulse-red {
-            0%, 100% { background: #dc2626; box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
-            50% { background: #991b1b; box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; transition: background-color 0.3s, color 0.3s; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #8b5cf6; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #7c3aed; }
+        ::-webkit-scrollbar-thumb { background: #64748b; border-radius: 10px; }
+        .dark-mode { background-color: #0f172a; color: #f1f5f9; }
+        .light-mode { background-color: #f8fafc; color: #1e293b; }
+        .glass-dark { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .glass-light { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
     </style>
 </head>
-<body id="main-body" class="dark h-screen overflow-hidden">
-    <div id="root" class="h-full"></div>
+<body>
+    <div id="root" class="h-screen w-full overflow-hidden"></div>
 
+    @verbatim
     <script type="text/babel">
         const { useState, useEffect, useMemo, useRef } = React;
 
+        // --- 1. KOMPONEN ICONS ---
+        const Icons = {
+            Dashboard: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>,
+            Database: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>,
+            Active: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>,
+            Expired: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>,
+            Logout: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>,
+            Menu: () => <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h7"></path></svg>,
+            Moon: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>,
+            Sun: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>,
+            Add: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>,
+            Download: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+        };
+
+        // --- 2. KOMPONEN UI ---
+        const StatCard = ({ title, count, colorClass, isDarkMode, icon }) => (
+            <div className={`p-6 rounded-3xl border transition-all hover:scale-[1.02] flex items-center justify-between ${isDarkMode ? 'bg-[#1e293b] border-white/5' : 'bg-white border-slate-200 shadow-sm'}`}>
+                <div>
+                    <p className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{title}</p>
+                    <h3 className={`text-4xl font-black ${colorClass}`}>{count}</h3>
+                </div>
+                <div className={`p-3 rounded-2xl ${isDarkMode ? 'bg-white/5' : 'bg-slate-100'} opacity-70`}>{icon}</div>
+            </div>
+        );
+
+        const HeroBanner = ({ currentTime }) => (
+            <div className="rounded-[30px] p-8 mb-8 relative overflow-hidden bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-xl">
+                <div className="relative z-10">
+                    <p className="opacity-80 text-sm font-bold uppercase tracking-widest mb-2">{currentTime.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                    <h1 className="text-3xl md:text-4xl font-black mb-2">Welcome back, Administrator!</h1>
+                    <p className="opacity-90 max-w-xl">Berikut adalah ringkasan status sertifikat personel hari ini. Cek data expired untuk tindakan segera.</p>
+                </div>
+                <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl"></div>
+                <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-40 h-40 bg-black opacity-10 rounded-full blur-2xl"></div>
+            </div>
+        );
+
+        const NavItem = ({ id, icon: Icon, label, activeView, setActiveView, isSidebarOpen }) => (
+            <button onClick={() => setActiveView(id)} className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all mb-1 group ${activeView === id ? 'bg-violet-600 text-white shadow-md' : 'hover:bg-white/5 opacity-70 hover:opacity-100'}`}>
+                <Icon /> <span className={`${!isSidebarOpen && 'hidden'} text-sm font-semibold whitespace-nowrap`}>{label}</span>
+            </button>
+        );
+
+        // --- 3. APP UTAMA ---
         function App() {
             const [isDarkMode, setIsDarkMode] = useState(true);
             const [isLoggedIn, setIsLoggedIn] = useState(false);
+            const [activeView, setActiveView] = useState('dashboard');
+            const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+            const [certs, setCerts] = useState([]);
+            const [currentTime, setCurrentTime] = useState(new Date());
             const [loginData, setLoginData] = useState({ user: '', pass: '' });
+
+            // --- STATE FILTER ---
             const [searchTerm, setSearchTerm] = useState('');
             const [filterWilayah, setFilterWilayah] = useState('');
-            const [currentTime, setCurrentTime] = useState(new Date());
-            const [certs, setCerts] = useState([]);
-            const [editingId, setEditingId] = useState(null);
-            const [form, setForm] = useState({
-                nama: '', ktp: '', noSertif: '', noReg: '', kualifikasi: '', wilayah: '', tahunTerbit: ''
-            });
+            // filterKualifikasi dihapus sesuai request, pindah ke SearchTerm
 
+            const [editingId, setEditingId] = useState(null);
+            const [form, setForm] = useState({ nama: '', ktp: '', noSertif: '', noReg: '', kualifikasi: '', wilayah: '', tahunTerbit: '' });
             const fileInputRef = useRef(null);
 
-            const fetchCerts = async () => {
-                try {
-                    const response = await fetch('/api/certs');
-                    const data = await response.json();
-                    const mappedData = data.map(item => ({
-                        id: item.id,
-                        nama: item.nama,
-                        ktp: item.ktp,
-                        noSertif: item.no_sertif,
-                        noReg: item.no_reg,
-                        kualifikasi: item.kualifikasi,
-                        wilayah: item.wilayah,
-                        tahunTerbit: item.tgl_terbit,
-                        tglExpired: item.tgl_expired
-                    }));
-                    setCerts(mappedData);
-                } catch (error) {
-                    console.error("Gagal mengambil data:", error);
-                }
-            };
+            // --- Effects ---
+            useEffect(() => {
+                const root = document.getElementById('root');
+                if(isDarkMode) { root.className = 'h-screen w-full overflow-hidden dark-mode'; }
+                else { root.className = 'h-screen w-full overflow-hidden light-mode'; }
+            }, [isDarkMode]);
 
             useEffect(() => {
                 fetchCerts();
@@ -82,372 +108,298 @@
                 return () => clearInterval(timer);
             }, []);
 
-            useEffect(() => {
-                document.getElementById('main-body').className = isDarkMode ? 'dark h-screen overflow-hidden' : 'light h-screen overflow-hidden';
-            }, [isDarkMode]);
+            const fetchCerts = async () => {
+                try {
+                    const response = await fetch('/api/certs');
+                    const data = await response.json();
+                    const sortedData = data.map(item => ({
+                        id: item.id, nama: item.nama, ktp: item.ktp, noSertif: item.no_sertif,
+                        noReg: item.no_reg, kualifikasi: item.kualifikasi, wilayah: item.wilayah,
+                        tahunTerbit: item.tgl_terbit, tglExpired: item.tgl_expired
+                    })).sort((a, b) => a.nama.localeCompare(b.nama)); // Sort A-Z
 
-            const uniqueWilayah = useMemo(() => {
-                return [...new Set(certs.map(item => item.wilayah))].sort();
-            }, [certs]);
-
-            const filteredAndSortedData = useMemo(() => {
-                return certs
-                    .filter(c => {
-                        const matchSearch = c.nama.toLowerCase().includes(searchTerm.toLowerCase()) || c.ktp.includes(searchTerm);
-                        const matchWilayah = filterWilayah === '' || c.wilayah === filterWilayah;
-                        return matchSearch && matchWilayah;
-                    })
-                    .sort((a, b) => a.nama.localeCompare(b.nama));
-            }, [certs, searchTerm, filterWilayah]);
-
-            const showToast = (title, icon) => {
-                Swal.fire({ title, icon, toast: true, position: 'top-end', showConfirmButton: false, timer: 3000,
-                    background: isDarkMode ? '#1e293b' : '#fff', color: isDarkMode ? '#fff' : '#000' });
+                    setCerts(sortedData);
+                } catch (error) { console.error("Error fetching data"); }
             };
 
+            // --- Logic Data (Active vs Expired) ---
+            const processedData = useMemo(() => {
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                return {
+                    all: certs,
+                    active: certs.filter(c => new Date(c.tglExpired) >= today),
+                    expired: certs.filter(c => new Date(c.tglExpired) < today)
+                };
+            }, [certs, currentTime]);
+
+            // --- FILTER & SORTING ---
+            const tableData = useMemo(() => {
+                let data = activeView === 'active' ? processedData.active : (activeView === 'expired' ? processedData.expired : processedData.all);
+
+                return data.filter(c => {
+                    const searchLower = searchTerm.toLowerCase();
+                    // Search di Nama, KTP, dan KUALIFIKASI
+                    const matchSearch = c.nama.toLowerCase().includes(searchLower) ||
+                                      c.ktp.includes(searchLower) ||
+                                      c.kualifikasi.toLowerCase().includes(searchLower);
+
+                    const matchWilayah = filterWilayah === '' || c.wilayah === filterWilayah;
+                    return matchSearch && matchWilayah;
+                }).sort((a, b) => a.nama.localeCompare(b.nama));
+            }, [activeView, processedData, searchTerm, filterWilayah]);
+
+            const uniqueWilayah = useMemo(() => [...new Set(certs.map(i => i.wilayah))].sort(), [certs]);
+
+            const regionStats = useMemo(() => uniqueWilayah.map(r => ({
+                region: r, count: certs.filter(c => c.wilayah === r).length,
+                percent: (certs.filter(c => c.wilayah === r).length / certs.length) * 100
+            })).sort((a,b) => b.count - a.count).slice(0,5), [certs, uniqueWilayah]);
+
+            // --- Handlers ---
             const handleLogin = (e) => {
                 e.preventDefault();
                 if(loginData.user === 'admin' && loginData.pass === '1234') {
-                    setIsLoggedIn(true);
-                    showToast('Welcome!', 'success');
-                } else {
-                    Swal.fire({ icon: 'error', title: 'Akses Ditolak', text: 'Kredensial Salah!',
-                        background: isDarkMode ? '#1e293b' : '#fff', color: isDarkMode ? '#fff' : '#000' });
-                }
+                    setIsLoggedIn(true); Swal.fire({ icon: 'success', title: 'Welcome', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 });
+                } else { Swal.fire({ icon: 'error', title: 'Login Gagal' }); }
             };
 
             const addOrUpdateData = async (e) => {
                 e.preventDefault();
-                if(Object.values(form).some(val => val === '')) return;
-
                 const tglTerbit = new Date(form.tahunTerbit);
                 const tglExpired = new Date(tglTerbit);
                 tglExpired.setFullYear(tglExpired.getFullYear() + 3);
-                const formatDate = (date) => date.toISOString().split('T')[0];
-                const payload = { ...form, tglExpired: formatDate(tglExpired) };
+                const offset = tglExpired.getTimezoneOffset();
+                const cleanDate = new Date(tglExpired.getTime() - (offset*60*1000));
+                const payload = { ...form, tglExpired: cleanDate.toISOString().split('T')[0] };
 
-                try {
-                    if(editingId) {
-                        await fetch(`/api/certs/${editingId}`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload)
-                        });
-                        setEditingId(null);
-                    } else {
-                        await fetch('/api/certs', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload)
-                        });
-                    }
-                    fetchCerts();
-                    setForm({ nama: '', ktp: '', noSertif: '', noReg: '', kualifikasi: '', wilayah: '', tahunTerbit: '' });
-                    showToast('Data Berhasil Disimpan', 'success');
-                } catch (error) {
-                    Swal.fire('Error', 'Gagal menyimpan', 'error');
-                }
+                const url = editingId ? `/api/certs/${editingId}` : '/api/certs';
+                const method = editingId ? 'PUT' : 'POST';
+                await fetch(url, { method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                fetchCerts(); setEditingId(null); setForm({ nama: '', ktp: '', noSertif: '', noReg: '', kualifikasi: '', wilayah: '', tahunTerbit: '' });
+                Swal.fire('Sukses', 'Data tersimpan', 'success');
             };
 
-            // --- FUNGSI IMPORT EXCEL (FINAL FIX: TIMEZONE + MANUAL PARSE + ERROR HANDLING) ---
-            const handleImportExcel = (e) => {
+            const handleDelete = (id) => {
+                Swal.fire({ title: 'Hapus?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33' }).then(async (res) => {
+                    if (res.isConfirmed) { await fetch(`/api/certs/${id}`, { method: 'DELETE' }); fetchCerts(); Swal.fire('Terhapus!', '', 'success'); }
+                });
+            };
+
+            const handleImport = (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
-
                 const reader = new FileReader();
                 reader.onload = (evt) => {
-                    const bstr = evt.target.result;
-                    const wb = XLSX.read(bstr, { type: 'binary', cellDates: true });
-                    const wsname = wb.SheetNames[0];
-                    const ws = wb.Sheets[wsname];
-                    const data = XLSX.utils.sheet_to_json(ws);
-
-                    // --- FUNGSI PEMBERSIH TANGGAL ---
-                    const cleanDate = (inputDate) => {
-                        if (!inputDate) return new Date().toISOString().split('T')[0];
-
-                        let dateObj;
-
-                        // KASUS 1: Excel Object Date -> Tambah 12 Jam biar aman dari timezone mundur
-                        if (inputDate instanceof Date) {
-                            dateObj = new Date(inputDate);
-                            dateObj.setHours(dateObj.getHours() + 12);
-                        }
-                        // KASUS 2: Excel Text (23-01-2023 atau 23/05/2024) -> Manual Parse
-                        else if (typeof inputDate === 'string') {
-                            const parts = inputDate.split(/[-/]/);
-                            if (parts.length === 3) {
-                                let d = parseInt(parts[0]);
-                                let m = parseInt(parts[1]);
-                                let y = parseInt(parts[2]);
-
-                                // Antisipasi YYYY-MM-DD
-                                if (parts[0].length === 4) { y = parseInt(parts[0]); m = parseInt(parts[1]); d = parseInt(parts[2]); }
-
-                                dateObj = new Date(y, m - 1, d);
-                            } else {
-                                dateObj = new Date(inputDate);
-                            }
-                        }
-                        else {
-                            dateObj = new Date(inputDate);
-                        }
-
-                        if (isNaN(dateObj.getTime())) return new Date().toISOString().split('T')[0];
-
-                        const year = dateObj.getFullYear();
-                        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-                        const day = String(dateObj.getDate()).padStart(2, '0');
-
-                        return `${year}-${month}-${day}`;
-                    };
-
-                    const processedData = data.map(row => {
-                        let rawTgl = row.TGL_TERBIT || row.tgl_terbit;
-                        let validTglTerbit = cleanDate(rawTgl);
-
-                        let tglPart = validTglTerbit.split('-');
-                        let expYear = parseInt(tglPart[0]) + 3;
-                        let validTglExpired = `${expYear}-${tglPart[1]}-${tglPart[2]}`;
-
+                    const wb = XLSX.read(evt.target.result, { type: 'binary', cellDates: true });
+                    const data = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+                    const processed = data.map(row => {
+                        let dateObj = new Date(row.TGL_TERBIT || row.tgl_terbit);
+                        if(isNaN(dateObj)) dateObj = new Date();
+                        dateObj.setHours(dateObj.getHours() + 12);
+                        const tglTerbit = dateObj.toISOString().split('T')[0];
+                        const parts = tglTerbit.split('-');
+                        const tglExpired = `${parseInt(parts[0])+3}-${parts[1]}-${parts[2]}`;
                         return {
-                            nama: row.NAMA || row.nama,
-                            ktp: row.NIK_KTP || row.ktp,
-                            no_sertif: row.NO_SERTIFIKAT || row.no_sertif,
-                            no_reg: row.NO_REGISTRASI || row.no_reg,
-                            kualifikasi: row.KUALIFIKASI || row.kualifikasi,
-                            wilayah: row.WILAYAH || row.wilayah,
-                            tgl_terbit: validTglTerbit,
-                            tgl_expired: validTglExpired
+                            nama: row.NAMA||row.nama, ktp: row.NIK_KTP||row.ktp, no_sertif: row.NO_SERTIFIKAT||row.no_sertif,
+                            no_reg: row.NO_REGISTRASI||row.no_reg, kualifikasi: row.KUALIFIKASI||row.kualifikasi,
+                            wilayah: row.WILAYAH||row.wilayah, tgl_terbit: tglTerbit, tgl_expired: tglExpired
                         };
                     });
-
-                    // --- KIRIM KE SERVER DENGAN PENGECEKAN STATUS ---
-                    fetch('/api/certs/import', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(processedData)
-                    })
-                    .then(async res => {
-                        if (!res.ok) {
-                            const errorData = await res.json();
-                            throw new Error(errorData.message || 'Gagal Import Data');
-                        }
-                        return res.json();
-                    })
-                    .then(res => {
-                        fetchCerts();
-                        showToast(`Berhasil import ${processedData.length} data!`, 'success');
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        Swal.fire('Gagal Import', 'Cek format header Excel atau data duplikat!', 'error');
-                    });
+                    fetch('/api/certs/import', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(processed)})
+                    .then(() => { fetchCerts(); Swal.fire('Sukses', `Import ${processed.length} data`, 'success'); });
                 };
                 reader.readAsBinaryString(file);
                 e.target.value = null;
             };
 
-            const exportToExcel = () => {
-                if (certs.length === 0) return;
-                const cleanData = filteredAndSortedData.map(item => ({
-                    NAMA: item.nama.toUpperCase(),
-                    NIK_KTP: item.ktp,
-                    NO_SERTIFIKAT: item.noSertif.toUpperCase(),
-                    NO_REGISTRASI: item.noReg.toUpperCase(),
-                    KUALIFIKASI: item.kualifikasi.toUpperCase(),
-                    WILAYAH: item.wilayah.toUpperCase(),
-                    TGL_TERBIT: item.tahunTerbit,
-                    TGL_EXPIRED: item.tglExpired
+            const exportExcel = () => {
+                if(tableData.length === 0) {
+                    Swal.fire('Info', 'Tidak ada data untuk diexport', 'info');
+                    return;
+                }
+                const cleanData = tableData.map(i => ({
+                    NAMA: i.nama, NIK_KTP: i.ktp, NO_SERTIFIKAT: i.noSertif, NO_REGISTRASI: i.noReg, KUALIFIKASI: i.kualifikasi,
+                    WILAYAH: i.wilayah, TGL_TERBIT: i.tahunTerbit, TGL_EXPIRED: i.tglExpired
                 }));
                 const ws = XLSX.utils.json_to_sheet(cleanData);
                 const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "DATABASE");
-                XLSX.writeFile(wb, "CERT_VAULT_DATABASE.xlsx");
+                XLSX.utils.book_append_sheet(wb, ws, "DATA");
+                let filename = "CERT_DATA.xlsx";
+                if(activeView === 'active') filename = "DATA_AKTIF.xlsx";
+                if(activeView === 'expired') filename = "DATA_EXPIRED.xlsx";
+                if(filterWilayah) filename = `DATA_${filterWilayah.replace(' ', '_')}.xlsx`;
+                XLSX.writeFile(wb, filename);
             };
 
-            const getStatus = (expiredDate) => {
-                const diffDays = Math.ceil((new Date(expiredDate) - currentTime) / (1000 * 60 * 60 * 24));
-                if (diffDays <= 30) return { label: '☣️ DANGER', color: 'danger-pulse', alert: true, days: diffDays };
-                if (diffDays <= 60) return { label: '⚠️ WARNING', color: 'bg-orange-500', alert: false, days: diffDays };
-                return { label: '✅ AMAN', color: 'bg-emerald-600', alert: false, days: diffDays };
+            // --- LOGIKA STATUS & SISA HARI ---
+            const getStatus = (exp) => {
+                const diff = Math.ceil((new Date(exp) - currentTime)/(1000*60*60*24));
+                // Kembalikan objek days agar bisa dirender
+                if(diff<=0) return { label: 'EXPIRED', days: diff, color: 'text-red-500', bg: 'bg-red-500/10' };
+                if(diff<=30) return { label: 'WARNING', days: diff, color: 'text-orange-500', bg: 'bg-orange-500/10' };
+                return { label: 'AKTIF', days: diff, color: 'text-emerald-500', bg: 'bg-emerald-500/10' };
             };
 
-            const handleDelete = (id) => {
-                Swal.fire({
-                    title: 'Hapus?', text: "Data akan dihapus!", icon: 'warning', showCancelButton: true,
-                    background: isDarkMode ? '#1e293b' : '#fff', color: isDarkMode ? '#fff' : '#000'
-                }).then(async (res) => {
-                    if (res.isConfirmed) {
-                        await fetch(`/api/certs/${id}`, { method: 'DELETE' });
-                        fetchCerts();
-                        showToast('Deleted', 'success');
-                    }
-                });
-            }
-
+            // --- RENDER LOGIN ---
             if (!isLoggedIn) {
                 return (
-                     <div className={`flex items-center justify-center min-h-screen p-6 ${isDarkMode ? 'bg-slate-950' : 'bg-slate-100'}`}>
-                        <div className={`flex flex-col md:flex-row max-w-4xl w-full rounded-[40px] overflow-hidden shadow-2xl animate__animated animate__zoomIn ${isDarkMode ? 'glass-dark' : 'glass-light'}`}>
-                            <div className="md:w-1/2 bg-violet-600 p-12 text-white flex flex-col justify-center">
-                                <h1 className="text-5xl font-black mb-6 tracking-tighter uppercase">CERT<span className="text-violet-200">VAULT</span></h1>
-                                <p className="text-lg opacity-90 leading-relaxed font-semibold">Digital Compliance & Certificate Management System.</p>
-                                <p className="mt-4 opacity-70 text-sm leading-relaxed">Pantau masa berlaku sertifikat petugas secara real-time. Lindungi validitas operasional dengan sistem peringatan otomatis.</p>
+                    <div className="flex items-center justify-center h-full p-6">
+                        <div className={`w-full max-w-md p-8 rounded-3xl shadow-2xl animate__animated animate__fadeIn ${isDarkMode ? 'glass-dark' : 'glass-light'}`}>
+                            <div className="text-center mb-8">
+                                <h1 className="text-3xl font-black uppercase tracking-tight mb-2">CERT VAULT <span className="text-violet-500">SYSTEM</span></h1>
+                                <p className="text-sm opacity-60">Authorized Personnel Only</p>
                             </div>
-                            <div className="md:w-1/2 p-12">
-                                <h2 className="text-2xl font-black mb-8 uppercase tracking-tight">Login Portal</h2>
-                                <form onSubmit={handleLogin} className="space-y-4">
-                                    <input className={`w-full p-4 rounded-2xl outline-none border ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`} placeholder="Username" onChange={e => setLoginData({...loginData, user: e.target.value})} />
-                                    <input type="password" className={`w-full p-4 rounded-2xl outline-none border ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`} placeholder="Password" onChange={e => setLoginData({...loginData, pass: e.target.value})} />
-                                    <button className="w-full bg-violet-600 py-4 rounded-2xl font-black text-white hover:bg-violet-700 transition-all uppercase tracking-widest mt-4">Authorized Login</button>
-                                </form>
+                            <form onSubmit={handleLogin} className="space-y-4">
+                                <input className={`w-full p-4 rounded-xl outline-none border transition-all ${isDarkMode ? 'bg-black/20 border-white/10' : 'bg-white border-slate-300'}`} placeholder="Username" value={loginData.user} onChange={e => setLoginData({...loginData, user: e.target.value})} />
+                                <input type="password" className={`w-full p-4 rounded-xl outline-none border transition-all ${isDarkMode ? 'bg-black/20 border-white/10' : 'bg-white border-slate-300'}`} placeholder="Password" value={loginData.pass} onChange={e => setLoginData({...loginData, pass: e.target.value})} />
+                                <button className="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg">LOGIN DASHBOARD</button>
+                            </form>
+                            <div className="mt-6 flex justify-center">
+                                <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2 rounded-full hover:bg-white/10 transition">{isDarkMode ? <Icons.Sun /> : <Icons.Moon />}</button>
                             </div>
                         </div>
                     </div>
                 );
             }
 
+            // --- RENDER DASHBOARD ---
             return (
-                <div className="h-screen w-full flex flex-col p-4 md:p-6 overflow-hidden relative">
-                    {/* --- HEADER FIX (Gak Ikut Scroll) --- */}
-                    <div className="flex-none flex flex-col md:flex-row justify-between items-center mb-6 gap-4 z-20">
-                        <div className="flex items-center gap-4">
-                            <h1 className="text-3xl font-black tracking-tighter uppercase italic">CERT<span className="text-violet-500 font-light">VAULT</span></h1>
+                <div className="flex h-full">
+                    <aside className={`flex flex-col border-r transition-all duration-300 ${isSidebarOpen ? 'w-64' : 'w-20'} ${isDarkMode ? 'bg-[#1e293b] border-white/5' : 'bg-white border-slate-200'}`}>
+                        <div className="h-20 flex items-center justify-center border-b border-inherit">
+                            <div className={`font-black text-xl tracking-tighter ${!isSidebarOpen && 'text-2xl'}`}>{isSidebarOpen ? <span>CV<span className="text-violet-500">.SYS</span></span> : <span className="text-violet-500">CV</span>}</div>
                         </div>
-                        <div className="flex flex-wrap justify-center items-center gap-3">
-                            <div className="relative">
-                                <select
-                                    value={filterWilayah}
-                                    onChange={(e) => setFilterWilayah(e.target.value)}
-                                    className={`pl-5 pr-10 py-3 rounded-2xl outline-none border text-xs font-bold font-sans transition-all appearance-none cursor-pointer shadow-lg w-full md:w-auto
-                                        ${isDarkMode
-                                            ? 'bg-[#1e293b] border-white/10 text-white hover:bg-[#334155]'
-                                            : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-                                        }`}
-                                >
-                                    <option value="" className="bg-slate-800 text-white">🌍 Semua Wilayah</option>
-                                    {uniqueWilayah.map(wil => (
-                                        <option key={wil} value={wil} className={isDarkMode ? 'bg-slate-800 text-white' : 'bg-white text-slate-700'}>
-                                            📍 {wil}
-                                        </option>
-                                    ))}
-                                </select>
-                                <div className={`absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none ${isDarkMode ? 'text-white/50' : 'text-slate-400'}`}>
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                        <nav className="flex-1 p-4 overflow-y-auto">
+                            <NavItem id="dashboard" icon={Icons.Dashboard} label="Dashboard" activeView={activeView} setActiveView={setActiveView} isSidebarOpen={isSidebarOpen} />
+                            <NavItem id="all" icon={Icons.Database} label="Master Data" activeView={activeView} setActiveView={setActiveView} isSidebarOpen={isSidebarOpen} />
+                            <NavItem id="active" icon={Icons.Active} label="Sertifikat Aktif" activeView={activeView} setActiveView={setActiveView} isSidebarOpen={isSidebarOpen} />
+                            <NavItem id="expired" icon={Icons.Expired} label="Data Expired" activeView={activeView} setActiveView={setActiveView} isSidebarOpen={isSidebarOpen} />
+                        </nav>
+                        <div className="p-4 border-t border-inherit">
+                            <button onClick={() => setIsLoggedIn(false)} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-red-500/10 text-red-500 transition-all"><Icons.Logout /> <span className={`${!isSidebarOpen && 'hidden'} text-sm font-bold`}>Logout</span></button>
+                        </div>
+                    </aside>
+
+                    <main className="flex-1 flex flex-col h-full overflow-hidden relative">
+                        <header className={`h-20 border-b flex items-center justify-between px-6 z-10 sticky top-0 backdrop-blur-md ${isDarkMode ? 'bg-[#0f172a]/80 border-white/5' : 'bg-white/80 border-slate-200'}`}>
+                            <div className="flex items-center gap-4">
+                                <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 rounded-lg hover:bg-white/10 opacity-70"><Icons.Menu /></button>
+                                <h2 className="text-lg font-bold capitalize hidden md:block">{activeView.replace('_', ' ')} Overview</h2>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <button onClick={() => setIsDarkMode(!isDarkMode)} className={`p-2 rounded-lg border ${isDarkMode ? 'border-white/10 hover:bg-white/5' : 'border-slate-200 hover:bg-slate-100'}`}>{isDarkMode ? <Icons.Sun /> : <Icons.Moon />}</button>
+                            </div>
+                        </header>
+
+                        <div className="flex-1 overflow-y-auto p-6 md:p-8">
+                            {activeView === 'dashboard' ? (
+                                <div className="animate__animated animate__fadeIn">
+                                    <HeroBanner currentTime={currentTime} />
+                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                        <div className="lg:col-span-2 space-y-8">
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                <StatCard title="Total Data" count={processedData.all.length} colorClass={isDarkMode ? 'text-white' : 'text-slate-800'} isDarkMode={isDarkMode} icon={<Icons.Database />} />
+                                                <StatCard title="Aktif" count={processedData.active.length} colorClass="text-emerald-500" isDarkMode={isDarkMode} icon={<Icons.Active />} />
+                                                <StatCard title="Expired" count={processedData.expired.length} colorClass="text-red-500" isDarkMode={isDarkMode} icon={<Icons.Expired />} />
+                                            </div>
+                                            <div className={`rounded-3xl border p-6 ${isDarkMode ? 'bg-[#1e293b] border-white/5' : 'bg-white border-slate-200 shadow-sm'}`}>
+                                                <div className="flex justify-between items-center mb-6"><h3 className="font-bold">⚠️ Perlu Perhatian</h3><button onClick={() => setActiveView('expired')} className="text-xs font-bold text-violet-500">Lihat Semua</button></div>
+                                                <div className="overflow-x-auto">
+                                                    <table className="w-full text-left text-sm">
+                                                        <thead className="opacity-50 uppercase text-[10px] border-b border-inherit"><tr><th className="pb-3">Nama</th><th className="pb-3 text-center">Sisa Hari</th></tr></thead>
+                                                        <tbody>
+                                                            {processedData.all.sort((a,b) => new Date(a.tglExpired) - new Date(b.tglExpired)).slice(0, 5).map(c => {
+                                                                const st = getStatus(c.tglExpired);
+                                                                return <tr key={c.id} className="border-b border-inherit hover:bg-black/5"><td className="py-4 font-bold">{c.nama}</td><td className="py-4 text-center"><span className={`text-[10px] px-2 py-1 rounded font-black ${st.bg} ${st.color}`}>{st.days <= 0 ? 'EXPIRED' : st.days + ' Hari'}</span></td></tr>
+                                                            })}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-8">
+                                            <div className={`rounded-3xl border p-6 ${isDarkMode ? 'bg-[#1e293b] border-white/5' : 'bg-white border-slate-200 shadow-sm'}`}>
+                                                <h3 className="font-bold mb-4">⚡ Quick Actions</h3>
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <button onClick={() => setActiveView('all')} className="p-4 rounded-2xl bg-violet-600 text-white font-bold text-xs hover:bg-violet-700 transition flex flex-col items-center gap-2"><Icons.Add /> Input Data</button>
+                                                    <button onClick={exportExcel} className="p-4 rounded-2xl bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-700 transition flex flex-col items-center gap-2"><Icons.Download /> Export Excel</button>
+                                                </div>
+                                            </div>
+                                            <div className={`rounded-3xl border p-6 ${isDarkMode ? 'bg-[#1e293b] border-white/5' : 'bg-white border-slate-200 shadow-sm'}`}>
+                                                <h3 className="font-bold mb-4">🗺️ Top Wilayah</h3>
+                                                <div className="space-y-4">{regionStats.map((r, i) => <div key={i}><div className="flex justify-between text-xs font-bold mb-1"><span>{r.region}</span><span>{r.count}</span></div><div className="w-full bg-slate-700 rounded-full h-2"><div className="bg-violet-500 h-2 rounded-full" style={{width: `${r.percent}%`}}></div></div></div>)}</div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-
-                            <input
-                                className={`pl-6 pr-4 py-3 rounded-2xl outline-none border w-48 text-sm font-bold transition-all ${isDarkMode ? 'bg-white/5 border-white/10 focus:border-violet-500' : 'bg-white border-black/10 focus:border-violet-500 shadow-sm'}`}
-                                placeholder="🔍 Cari Nama/NIK..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-
-                            <input type="file" ref={fileInputRef} onChange={handleImportExcel} accept=".xlsx, .xls" className="hidden" />
-                            <button onClick={() => fileInputRef.current.click()} className="bg-violet-600 text-white px-5 py-3 rounded-2xl font-black shadow-lg shadow-violet-600/20 hover:scale-105 transition uppercase text-[10px] flex items-center gap-2">📥 Import</button>
-                            <button onClick={exportToExcel} className="bg-emerald-600 text-white px-5 py-3 rounded-2xl font-black shadow-lg shadow-emerald-600/20 hover:scale-105 transition uppercase text-[10px] flex items-center gap-2">📤 Export</button>
-                            <button onClick={() => setIsDarkMode(!isDarkMode)} className={`p-3 rounded-2xl text-xl border ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-black/10'}`}>{isDarkMode ? '☀️' : '🌙'}</button>
-                            <button onClick={() => setIsLoggedIn(false)} className="bg-red-500/10 text-red-500 px-5 py-3 rounded-2xl font-black border border-red-500/20 hover:bg-red-600 hover:text-white transition text-[10px]">LOGOUT</button>
-                        </div>
-                    </div>
-
-                    {/* --- MAIN CONTENT (GRID) --- */}
-                    <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 overflow-hidden mb-8">
-
-                        {/* 1. INPUT PANEL (Tetap ditempat / Freeze) */}
-                        <div className="lg:col-span-4 h-full flex flex-col overflow-hidden">
-                            <div className={`p-6 rounded-[30px] border h-full overflow-y-auto ${isDarkMode ? 'glass-dark' : 'glass-light shadow-xl'}`}>
-                                <h2 className="text-xl font-black mb-6 flex items-center gap-3 uppercase italic sticky top-0 z-10">
-                                    <span className="w-1.5 h-8 bg-violet-500 rounded-full"></span>
-                                    {editingId ? 'Edit Record' : 'Add Personil'}
-                                </h2>
-                                <form onSubmit={addOrUpdateData} className="space-y-3 text-xs font-bold">
-                                    <input className={`w-full p-4 rounded-xl outline-none border ${isDarkMode ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-black/5'}`} placeholder="Nama Lengkap" value={form.nama} onChange={e => setForm({...form, nama: e.target.value})} />
-                                    <input className={`w-full p-4 rounded-xl outline-none border ${isDarkMode ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-black/5'}`} placeholder="NIK KTP" value={form.ktp} onChange={e => setForm({...form, ktp: e.target.value})} />
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <input className={`p-4 rounded-xl outline-none border ${isDarkMode ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-black/5'}`} placeholder="No. Sertifikat" value={form.noSertif} onChange={e => setForm({...form, noSertif: e.target.value})} />
-                                        <input className={`p-4 rounded-xl outline-none border ${isDarkMode ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-black/5'}`} placeholder="No. Registrasi" value={form.noReg} onChange={e => setForm({...form, noReg: e.target.value})} />
+                            ) : (
+                                <div className="flex flex-col lg:flex-row gap-6 animate__animated animate__fadeIn">
+                                    {activeView === 'all' && (
+                                        <div className={`lg:w-1/3 p-6 rounded-3xl border h-fit ${isDarkMode ? 'bg-[#1e293b] border-white/5' : 'bg-white border-slate-200 shadow-sm'}`}>
+                                            <h3 className="font-bold mb-4 pb-4 border-b border-inherit">📝 {editingId ? 'Edit Data' : 'Input Baru'}</h3>
+                                            <form onSubmit={addOrUpdateData} className="space-y-3">
+                                                <input className={`w-full p-3 rounded-xl text-sm font-bold outline-none border ${isDarkMode ? 'bg-black/20 border-white/10' : 'bg-slate-50 border-slate-200'}`} placeholder="Nama" value={form.nama} onChange={e => setForm({...form, nama: e.target.value})} required />
+                                                <input className={`w-full p-3 rounded-xl text-sm font-bold outline-none border ${isDarkMode ? 'bg-black/20 border-white/10' : 'bg-slate-50 border-slate-200'}`} placeholder="NIK" value={form.ktp} onChange={e => setForm({...form, ktp: e.target.value})} required />
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    <input className={`w-full p-3 rounded-xl text-sm font-bold outline-none border ${isDarkMode ? 'bg-black/20 border-white/10' : 'bg-slate-50 border-slate-200'}`} placeholder="No. Sertif" value={form.noSertif} onChange={e => setForm({...form, noSertif: e.target.value})} required />
+                                                    <input className={`w-full p-3 rounded-xl text-sm font-bold outline-none border ${isDarkMode ? 'bg-black/20 border-white/10' : 'bg-slate-50 border-slate-200'}`} placeholder="No. Reg" value={form.noReg} onChange={e => setForm({...form, noReg: e.target.value})} required />
+                                                </div>
+                                                <input className={`w-full p-3 rounded-xl text-sm font-bold outline-none border ${isDarkMode ? 'bg-black/20 border-white/10' : 'bg-slate-50 border-slate-200'}`} placeholder="Kualifikasi (e.g DISTER)" value={form.kualifikasi} onChange={e => setForm({...form, kualifikasi: e.target.value})} required />
+                                                <input className={`w-full p-3 rounded-xl text-sm font-bold outline-none border ${isDarkMode ? 'bg-black/20 border-white/10' : 'bg-slate-50 border-slate-200'}`} placeholder="Wilayah" value={form.wilayah} onChange={e => setForm({...form, wilayah: e.target.value})} required />
+                                                <input type="date" className="w-full p-3 rounded-xl text-sm font-bold outline-none border bg-transparent" value={form.tahunTerbit} onChange={e => setForm({...form, tahunTerbit: e.target.value})} required />
+                                                <button className="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 rounded-xl transition-all text-sm">{editingId ? 'Update' : 'Simpan'}</button>
+                                            </form>
+                                            <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-inherit">
+                                                <button onClick={() => fileInputRef.current.click()} className="bg-slate-500 text-white py-2 rounded-xl text-xs font-bold">Import</button>
+                                                <input type="file" ref={fileInputRef} className="hidden" onChange={handleImport} accept=".xlsx, .xls" />
+                                                <button onClick={exportExcel} className="bg-emerald-600 text-white py-2 rounded-xl text-xs font-bold">Export</button>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className={`flex-1 rounded-3xl border overflow-hidden flex flex-col ${isDarkMode ? 'bg-[#1e293b] border-white/5' : 'bg-white border-slate-200 shadow-sm'}`}>
+                                        <div className="p-4 border-b border-inherit flex flex-wrap gap-2 justify-between items-center">
+                                            <div className="flex items-center gap-2">
+                                                <h3 className="font-bold">Data List ({tableData.length})</h3>
+                                                {activeView !== 'all' && <button onClick={exportExcel} className="text-[10px] bg-emerald-600 px-2 py-1 rounded text-white font-bold hover:bg-emerald-700">Export</button>}
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <select className={`text-xs font-bold p-2 rounded-xl border outline-none ${isDarkMode ? 'bg-black/20 border-white/10' : 'bg-slate-50 border-slate-200'}`} onChange={e => setFilterWilayah(e.target.value)}>
+                                                    <option value="">🌍 Semua</option>{uniqueWilayah.map(w => <option key={w} value={w}>{w}</option>)}
+                                                </select>
+                                                <input className={`text-xs font-bold p-2 rounded-xl border outline-none w-32 ${isDarkMode ? 'bg-black/20 border-white/10' : 'bg-slate-50 border-slate-200'}`} placeholder="🔍 Cari..." onChange={e => setSearchTerm(e.target.value)} />
+                                            </div>
+                                        </div>
+                                        <div className="flex-1 overflow-auto">
+                                            <table className="w-full text-left text-sm border-separate border-spacing-0">
+                                                <thead className={`text-[10px] uppercase font-bold sticky top-0 z-10 ${isDarkMode ? 'bg-[#0f172a] text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
+                                                    <tr><th className="p-4">Personil</th><th className="p-4">Sertifikat</th><th className="p-4 text-center">Status / Sisa Hari</th>{activeView === 'all' && <th className="p-4 text-right">Aksi</th>}</tr>
+                                                </thead>
+                                                <tbody>
+                                                    {tableData.length === 0 ? <tr><td colSpan="4" className="p-8 text-center opacity-50">Tidak ada data</td></tr> :
+                                                    tableData.map(c => {
+                                                        const st = getStatus(c.tglExpired);
+                                                        return (
+                                                            <tr key={c.id} className="border-b border-inherit hover:bg-black/5 transition">
+                                                                <td className="p-4 border-b border-inherit"><div className="font-bold">{c.nama}</div><div className="text-[10px] opacity-60">NIK: {c.ktp}</div><div className="text-[10px] text-violet-500 font-bold">{c.wilayah}</div></td>
+                                                                <td className="p-4 border-b border-inherit"><div className="font-mono text-xs opacity-80 bg-black/5 w-fit px-1 rounded">{c.noSertif}</div><div className="text-[10px] mt-1 font-bold text-orange-400">{c.kualifikasi}</div></td>
+                                                                <td className="p-4 border-b border-inherit text-center">
+                                                                    <div className={`text-lg font-black leading-none ${st.color}`}>{st.days <= 0 ? 'EXPIRED' : st.days + ' Hari'}</div>
+                                                                    <div className={`text-[9px] px-2 py-1 rounded font-black w-fit mx-auto mt-1 ${st.bg} ${st.color}`}>{st.label}</div>
+                                                                    <div className="text-[9px] mt-1 opacity-40 font-mono">{c.tglExpired}</div>
+                                                                </td>
+                                                                {activeView === 'all' && (<td className="p-4 border-b border-inherit text-right"><button onClick={() => {setForm(c); setEditingId(c.id)}} className="text-violet-500 p-2">✏️</button><button onClick={() => handleDelete(c.id)} className="text-red-500 p-2">🗑️</button></td>)}
+                                                            </tr>
+                                                        )
+                                                    })}
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
-                                    <input className={`w-full p-4 rounded-xl outline-none border ${isDarkMode ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-black/5'}`} placeholder="Kode Kualifikasi" value={form.kualifikasi} onChange={e => setForm({...form, kualifikasi: e.target.value})} />
-                                    <input className={`w-full p-4 rounded-xl outline-none border ${isDarkMode ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-black/5'}`} placeholder="Wilayah Kerja" value={form.wilayah} onChange={e => setForm({...form, wilayah: e.target.value})} />
-                                    <div className="p-4 bg-violet-500/10 rounded-2xl border border-violet-500/20 text-center">
-                                        <label className="text-[9px] font-black text-violet-400 block mb-2 uppercase tracking-widest">Pilih Tanggal Terbit</label>
-                                        <input type="date" className="bg-transparent outline-none font-black text-sm" value={form.tahunTerbit} onChange={e => setForm({...form, tahunTerbit: e.target.value})} />
-                                    </div>
-                                    <button className="w-full bg-violet-600 py-4 rounded-2xl font-black text-white shadow-xl hover:scale-[1.02] active:scale-95 transition-all text-sm uppercase">Simpan ke Database</button>
-                                </form>
-                            </div>
+                                </div>
+                            )}
                         </div>
-
-                        {/* 2. TABLE PANEL (Scrollable / Bisa discroll) */}
-                        <div className={`lg:col-span-8 h-full flex flex-col rounded-[30px] border overflow-hidden ${isDarkMode ? 'glass-dark' : 'glass-light shadow-xl border-black/5'}`}>
-                            {/* Header Table (Sticky) */}
-                            <div className="flex-1 overflow-y-auto relative">
-                                <table className="w-full text-left border-separate border-spacing-0">
-                                    <thead className={`sticky top-0 z-10 text-[10px] uppercase font-bold tracking-widest ${isDarkMode ? 'bg-[#0f172a] text-slate-500 shadow-md' : 'bg-slate-200 text-slate-500 shadow-sm'}`}>
-                                        <tr>
-                                            <th className="p-6">Identitas Petugas</th>
-                                            <th className="p-6">Detail Sertifikat</th>
-                                            <th className="p-6 text-center">Countdown</th>
-                                            <th className="p-6 text-center">Masa Berlaku</th>
-                                            <th className="p-6 text-right">Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className={isDarkMode ? 'text-slate-300' : 'text-slate-700'}>
-                                        {filteredAndSortedData.map((c) => {
-                                            const status = getStatus(c.tglExpired);
-                                            return (
-                                                <tr key={c.id} className="transition-all border-b border-white/5 hover:bg-violet-500/10 group">
-                                                    <td className="p-6 border-b border-white/[0.03]">
-                                                        <div className={`font-black uppercase text-sm ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{c.nama}</div>
-                                                        <div className="text-[10px] opacity-40 font-bold uppercase tracking-tighter">NIK: {c.ktp}</div>
-                                                        <div className="text-[10px] text-violet-500 font-black mt-1 uppercase italic">{c.wilayah}</div>
-                                                    </td>
-                                                    <td className="p-6 border-b border-white/[0.03]">
-                                                        <div className="mb-2">
-                                                            <span className={`px-2 py-1 rounded text-[10px] font-mono font-bold border ${isDarkMode ? 'bg-white/5 border-white/10 text-slate-300' : 'bg-slate-200 border-slate-300 text-slate-600'}`}>
-                                                                🏷️ {c.noSertif}
-                                                            </span>
-                                                        </div>
-                                                        <div className="text-[10px] font-bold">Reg: <span className="opacity-60">{c.noReg}</span></div>
-                                                        <div className="text-[10px] text-violet-400 font-black mt-1 uppercase tracking-tight">Kual: {c.kualifikasi}</div>
-                                                        <div className="text-[9px] mt-1 font-bold opacity-40 uppercase italic">Terbit: {c.tahunTerbit}</div>
-                                                    </td>
-                                                    <td className="p-6 border-b border-white/[0.03] text-center">
-                                                        <div className={`text-3xl font-black ${status.alert ? 'text-red-500 animate-pulse' : isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                                                            {status.days}
-                                                        </div>
-                                                        <p className="text-[8px] font-black opacity-30 uppercase tracking-[0.2em] -mt-1">Hari Lagi</p>
-                                                    </td>
-                                                    <td className="p-6 border-b border-white/[0.03] text-center">
-                                                        <div className={`text-[9px] px-3 py-2.5 rounded-xl font-black text-white shadow-md ${status.color}`}>
-                                                            {status.label}
-                                                        </div>
-                                                        <div className="text-[8px] mt-2 opacity-40 font-bold tracking-widest leading-none">
-                                                            EXP: {c.tglExpired}
-                                                        </div>
-                                                    </td>
-                                                    <td className="p-6 border-b border-white/[0.03] text-right flex gap-2 justify-end">
-                                                        <button onClick={() => {setForm(c); setEditingId(c.id);}} className="p-2.5 rounded-xl bg-violet-500/10 text-violet-500 hover:bg-violet-500 hover:text-white transition">✏️</button>
-                                                        <button onClick={() => handleDelete(c.id)} className="p-2.5 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition">🗑️</button>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* --- COPYRIGHT FOOTER (Fixed di bawah) --- */}
-                    <div className="flex-none text-center py-2">
-                        <p className={`text-[10px] font-bold uppercase tracking-[0.3em] ${isDarkMode ? 'text-white/20' : 'text-slate-400'}`}>
-                            © 2025 PT MAHIZA KARYA MANDIRI. All Rights Reserved.
-                        </p>
-                    </div>
+                    </main>
                 </div>
             );
         }
@@ -455,5 +407,6 @@
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
+    @endverbatim
 </body>
 </html>
