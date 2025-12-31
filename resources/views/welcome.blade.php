@@ -33,7 +33,7 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo, useRef } = React;
 
-        // --- 1. KOMPONEN ICONS ---
+        // --- ICONS ---
         const Icons = {
             Dashboard: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>,
             Database: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>,
@@ -47,7 +47,6 @@
             Download: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
         };
 
-        // --- 2. KOMPONEN UI ---
         const StatCard = ({ title, count, colorClass, isDarkMode, icon }) => (
             <div className={`p-6 rounded-3xl border transition-all hover:scale-[1.02] flex items-center justify-between ${isDarkMode ? 'bg-[#1e293b] border-white/5' : 'bg-white border-slate-200 shadow-sm'}`}>
                 <div>
@@ -63,10 +62,9 @@
                 <div className="relative z-10">
                     <p className="opacity-80 text-sm font-bold uppercase tracking-widest mb-2">{currentTime.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
                     <h1 className="text-3xl md:text-4xl font-black mb-2">Welcome back, Administrator!</h1>
-                    <p className="opacity-90 max-w-xl">Berikut adalah ringkasan status sertifikat personel hari ini. Cek data expired untuk tindakan segera.</p>
+                    <p className="opacity-90 max-w-xl">Berikut adalah ringkasan status sertifikat petugas hari ini. Cek data expired untuk tindakan segera.</p>
                 </div>
                 <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl"></div>
-                <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-40 h-40 bg-black opacity-10 rounded-full blur-2xl"></div>
             </div>
         );
 
@@ -76,7 +74,6 @@
             </button>
         );
 
-        // --- 3. APP UTAMA ---
         function App() {
             const [isDarkMode, setIsDarkMode] = useState(true);
             const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -86,16 +83,12 @@
             const [currentTime, setCurrentTime] = useState(new Date());
             const [loginData, setLoginData] = useState({ user: '', pass: '' });
 
-            // --- STATE FILTER ---
             const [searchTerm, setSearchTerm] = useState('');
             const [filterWilayah, setFilterWilayah] = useState('');
-            // filterKualifikasi dihapus sesuai request, pindah ke SearchTerm
-
             const [editingId, setEditingId] = useState(null);
             const [form, setForm] = useState({ nama: '', ktp: '', noSertif: '', noReg: '', kualifikasi: '', wilayah: '', tahunTerbit: '' });
             const fileInputRef = useRef(null);
 
-            // --- Effects ---
             useEffect(() => {
                 const root = document.getElementById('root');
                 if(isDarkMode) { root.className = 'h-screen w-full overflow-hidden dark-mode'; }
@@ -116,13 +109,11 @@
                         id: item.id, nama: item.nama, ktp: item.ktp, noSertif: item.no_sertif,
                         noReg: item.no_reg, kualifikasi: item.kualifikasi, wilayah: item.wilayah,
                         tahunTerbit: item.tgl_terbit, tglExpired: item.tgl_expired
-                    })).sort((a, b) => a.nama.localeCompare(b.nama)); // Sort A-Z
-
+                    })).sort((a, b) => a.nama.localeCompare(b.nama));
                     setCerts(sortedData);
                 } catch (error) { console.error("Error fetching data"); }
             };
 
-            // --- Logic Data (Active vs Expired) ---
             const processedData = useMemo(() => {
                 const today = new Date();
                 today.setHours(0,0,0,0);
@@ -133,30 +124,22 @@
                 };
             }, [certs, currentTime]);
 
-            // --- FILTER & SORTING ---
             const tableData = useMemo(() => {
                 let data = activeView === 'active' ? processedData.active : (activeView === 'expired' ? processedData.expired : processedData.all);
-
                 return data.filter(c => {
                     const searchLower = searchTerm.toLowerCase();
-                    // Search di Nama, KTP, dan KUALIFIKASI
-                    const matchSearch = c.nama.toLowerCase().includes(searchLower) ||
-                                      c.ktp.includes(searchLower) ||
-                                      c.kualifikasi.toLowerCase().includes(searchLower);
-
+                    const matchSearch = c.nama.toLowerCase().includes(searchLower) || c.ktp.includes(searchLower) || c.kualifikasi.toLowerCase().includes(searchLower);
                     const matchWilayah = filterWilayah === '' || c.wilayah === filterWilayah;
                     return matchSearch && matchWilayah;
                 }).sort((a, b) => a.nama.localeCompare(b.nama));
             }, [activeView, processedData, searchTerm, filterWilayah]);
 
             const uniqueWilayah = useMemo(() => [...new Set(certs.map(i => i.wilayah))].sort(), [certs]);
-
             const regionStats = useMemo(() => uniqueWilayah.map(r => ({
                 region: r, count: certs.filter(c => c.wilayah === r).length,
-                percent: (certs.filter(c => c.wilayah === r).length / certs.length) * 100
+                percent: (certs.filter(c => c.wilayah === r).length / (certs.length || 1)) * 100
             })).sort((a,b) => b.count - a.count).slice(0,5), [certs, uniqueWilayah]);
 
-            // --- Handlers ---
             const handleLogin = (e) => {
                 e.preventDefault();
                 if(loginData.user === 'admin' && loginData.pass === '1234') {
@@ -172,7 +155,6 @@
                 const offset = tglExpired.getTimezoneOffset();
                 const cleanDate = new Date(tglExpired.getTime() - (offset*60*1000));
                 const payload = { ...form, tglExpired: cleanDate.toISOString().split('T')[0] };
-
                 const url = editingId ? `/api/certs/${editingId}` : '/api/certs';
                 const method = editingId ? 'PUT' : 'POST';
                 await fetch(url, { method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
@@ -214,10 +196,7 @@
             };
 
             const exportExcel = () => {
-                if(tableData.length === 0) {
-                    Swal.fire('Info', 'Tidak ada data untuk diexport', 'info');
-                    return;
-                }
+                if(tableData.length === 0) { Swal.fire('Info', 'Tidak ada data untuk diexport', 'info'); return; }
                 const cleanData = tableData.map(i => ({
                     NAMA: i.nama, NIK_KTP: i.ktp, NO_SERTIFIKAT: i.noSertif, NO_REGISTRASI: i.noReg, KUALIFIKASI: i.kualifikasi,
                     WILAYAH: i.wilayah, TGL_TERBIT: i.tahunTerbit, TGL_EXPIRED: i.tglExpired
@@ -225,30 +204,24 @@
                 const ws = XLSX.utils.json_to_sheet(cleanData);
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, "DATA");
-                let filename = "CERT_DATA.xlsx";
-                if(activeView === 'active') filename = "DATA_AKTIF.xlsx";
-                if(activeView === 'expired') filename = "DATA_EXPIRED.xlsx";
-                if(filterWilayah) filename = `DATA_${filterWilayah.replace(' ', '_')}.xlsx`;
+                let filename = activeView === 'active' ? "DATA_AKTIF.xlsx" : (activeView === 'expired' ? "DATA_EXPIRED.xlsx" : "CERT_DATA.xlsx");
                 XLSX.writeFile(wb, filename);
             };
 
-            // --- LOGIKA STATUS & SISA HARI ---
             const getStatus = (exp) => {
                 const diff = Math.ceil((new Date(exp) - currentTime)/(1000*60*60*24));
-                // Kembalikan objek days agar bisa dirender
                 if(diff<=0) return { label: 'EXPIRED', days: diff, color: 'text-red-500', bg: 'bg-red-500/10' };
                 if(diff<=30) return { label: 'WARNING', days: diff, color: 'text-orange-500', bg: 'bg-orange-500/10' };
                 return { label: 'AKTIF', days: diff, color: 'text-emerald-500', bg: 'bg-emerald-500/10' };
             };
 
-            // --- RENDER LOGIN ---
             if (!isLoggedIn) {
                 return (
                     <div className="flex items-center justify-center h-full p-6">
                         <div className={`w-full max-w-md p-8 rounded-3xl shadow-2xl animate__animated animate__fadeIn ${isDarkMode ? 'glass-dark' : 'glass-light'}`}>
                             <div className="text-center mb-8">
                                 <h1 className="text-3xl font-black uppercase tracking-tight mb-2">CERT VAULT <span className="text-violet-500">SYSTEM</span></h1>
-                                <p className="text-sm opacity-60">Authorized Personnel Only</p>
+                                <p className="text-sm opacity-60">Authorized Staff Only</p>
                             </div>
                             <form onSubmit={handleLogin} className="space-y-4">
                                 <input className={`w-full p-4 rounded-xl outline-none border transition-all ${isDarkMode ? 'bg-black/20 border-white/10' : 'bg-white border-slate-300'}`} placeholder="Username" value={loginData.user} onChange={e => setLoginData({...loginData, user: e.target.value})} />
@@ -263,7 +236,6 @@
                 );
             }
 
-            // --- RENDER DASHBOARD ---
             return (
                 <div className="flex h-full">
                     <aside className={`flex flex-col border-r transition-all duration-300 ${isSidebarOpen ? 'w-64' : 'w-20'} ${isDarkMode ? 'bg-[#1e293b] border-white/5' : 'bg-white border-slate-200'}`}>
@@ -304,14 +276,32 @@
                                                 <StatCard title="Expired" count={processedData.expired.length} colorClass="text-red-500" isDarkMode={isDarkMode} icon={<Icons.Expired />} />
                                             </div>
                                             <div className={`rounded-3xl border p-6 ${isDarkMode ? 'bg-[#1e293b] border-white/5' : 'bg-white border-slate-200 shadow-sm'}`}>
-                                                <div className="flex justify-between items-center mb-6"><h3 className="font-bold">⚠️ Perlu Perhatian</h3><button onClick={() => setActiveView('expired')} className="text-xs font-bold text-violet-500">Lihat Semua</button></div>
+                                                <div className="flex justify-between items-center mb-6"><h3 className="font-bold">⚠️ Perlu Perhatian (Urut Abjad)</h3><button onClick={() => setActiveView('expired')} className="text-xs font-bold text-violet-500">Lihat Semua</button></div>
                                                 <div className="overflow-x-auto">
-                                                    <table className="w-full text-left text-sm">
-                                                        <thead className="opacity-50 uppercase text-[10px] border-b border-inherit"><tr><th className="pb-3">Nama</th><th className="pb-3 text-center">Sisa Hari</th></tr></thead>
+                                                    <table className="w-full text-left text-sm border-separate border-spacing-y-2">
+                                                        <thead className="opacity-50 uppercase text-[10px] border-b border-inherit">
+                                                            <tr>
+                                                                <th className="pb-3 px-2">Nama Petugas</th>
+                                                                <th className="pb-3 px-2">No. Registrasi</th>
+                                                                <th className="pb-3 px-2">Tgl Terbit</th>
+                                                                <th className="pb-3 px-2 text-center">Status Sisa Hari</th>
+                                                            </tr>
+                                                        </thead>
                                                         <tbody>
-                                                            {processedData.all.sort((a,b) => new Date(a.tglExpired) - new Date(b.tglExpired)).slice(0, 5).map(c => {
+                                                            {processedData.all.sort((a,b) => a.nama.localeCompare(b.nama)).slice(0, 10).map(c => {
                                                                 const st = getStatus(c.tglExpired);
-                                                                return <tr key={c.id} className="border-b border-inherit hover:bg-black/5"><td className="py-4 font-bold">{c.nama}</td><td className="py-4 text-center"><span className={`text-[10px] px-2 py-1 rounded font-black ${st.bg} ${st.color}`}>{st.days <= 0 ? 'EXPIRED' : st.days + ' Hari'}</span></td></tr>
+                                                                return (
+                                                                    <tr key={c.id} className={`${isDarkMode ? 'bg-white/5' : 'bg-slate-50'} hover:scale-[1.01] transition-all`}>
+                                                                        <td className="py-3 px-3 rounded-l-xl font-bold">{c.nama}</td>
+                                                                        <td className="py-3 px-3 opacity-70 text-xs font-mono">{c.noReg}</td>
+                                                                        <td className="py-3 px-3 opacity-70 text-xs">{c.tahunTerbit}</td>
+                                                                        <td className="py-3 px-3 rounded-r-xl text-center">
+                                                                            <span className={`text-[10px] px-2 py-1 rounded font-black ${st.bg} ${st.color}`}>
+                                                                                {st.days <= 0 ? 'EXPIRED' : st.days + ' Hari'}
+                                                                            </span>
+                                                                        </td>
+                                                                    </tr>
+                                                                )
                                                             })}
                                                         </tbody>
                                                     </table>
@@ -345,7 +335,7 @@
                                                     <input className={`w-full p-3 rounded-xl text-sm font-bold outline-none border ${isDarkMode ? 'bg-black/20 border-white/10' : 'bg-slate-50 border-slate-200'}`} placeholder="No. Sertif" value={form.noSertif} onChange={e => setForm({...form, noSertif: e.target.value})} required />
                                                     <input className={`w-full p-3 rounded-xl text-sm font-bold outline-none border ${isDarkMode ? 'bg-black/20 border-white/10' : 'bg-slate-50 border-slate-200'}`} placeholder="No. Reg" value={form.noReg} onChange={e => setForm({...form, noReg: e.target.value})} required />
                                                 </div>
-                                                <input className={`w-full p-3 rounded-xl text-sm font-bold outline-none border ${isDarkMode ? 'bg-black/20 border-white/10' : 'bg-slate-50 border-slate-200'}`} placeholder="Kualifikasi (e.g DISTER)" value={form.kualifikasi} onChange={e => setForm({...form, kualifikasi: e.target.value})} required />
+                                                <input className={`w-full p-3 rounded-xl text-sm font-bold outline-none border ${isDarkMode ? 'bg-black/20 border-white/10' : 'bg-slate-50 border-slate-200'}`} placeholder="Kualifikasi" value={form.kualifikasi} onChange={e => setForm({...form, kualifikasi: e.target.value})} required />
                                                 <input className={`w-full p-3 rounded-xl text-sm font-bold outline-none border ${isDarkMode ? 'bg-black/20 border-white/10' : 'bg-slate-50 border-slate-200'}`} placeholder="Wilayah" value={form.wilayah} onChange={e => setForm({...form, wilayah: e.target.value})} required />
                                                 <input type="date" className="w-full p-3 rounded-xl text-sm font-bold outline-none border bg-transparent" value={form.tahunTerbit} onChange={e => setForm({...form, tahunTerbit: e.target.value})} required />
                                                 <button className="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 rounded-xl transition-all text-sm">{editingId ? 'Update' : 'Simpan'}</button>
@@ -359,36 +349,42 @@
                                     )}
                                     <div className={`flex-1 rounded-3xl border overflow-hidden flex flex-col ${isDarkMode ? 'bg-[#1e293b] border-white/5' : 'bg-white border-slate-200 shadow-sm'}`}>
                                         <div className="p-4 border-b border-inherit flex flex-wrap gap-2 justify-between items-center">
-                                            <div className="flex items-center gap-2">
-                                                <h3 className="font-bold">Data List ({tableData.length})</h3>
-                                                {activeView !== 'all' && <button onClick={exportExcel} className="text-[10px] bg-emerald-600 px-2 py-1 rounded text-white font-bold hover:bg-emerald-700">Export</button>}
-                                            </div>
+                                            <div className="flex items-center gap-2"><h3 className="font-bold">Urut Abjad ({tableData.length})</h3></div>
                                             <div className="flex gap-2">
-                                                <select className={`text-xs font-bold p-2 rounded-xl border outline-none ${isDarkMode ? 'bg-black/20 border-white/10' : 'bg-slate-50 border-slate-200'}`} onChange={e => setFilterWilayah(e.target.value)}>
-                                                    <option value="">🌍 Semua</option>{uniqueWilayah.map(w => <option key={w} value={w}>{w}</option>)}
-                                                </select>
+                                                <select className={`text-xs font-bold p-2 rounded-xl border outline-none ${isDarkMode ? 'bg-black/20 border-white/10' : 'bg-slate-50 border-slate-200'}`} onChange={e => setFilterWilayah(e.target.value)}><option value="">🌍 Semua</option>{uniqueWilayah.map(w => <option key={w} value={w}>{w}</option>)}</select>
                                                 <input className={`text-xs font-bold p-2 rounded-xl border outline-none w-32 ${isDarkMode ? 'bg-black/20 border-white/10' : 'bg-slate-50 border-slate-200'}`} placeholder="🔍 Cari..." onChange={e => setSearchTerm(e.target.value)} />
                                             </div>
                                         </div>
                                         <div className="flex-1 overflow-auto">
                                             <table className="w-full text-left text-sm border-separate border-spacing-0">
                                                 <thead className={`text-[10px] uppercase font-bold sticky top-0 z-10 ${isDarkMode ? 'bg-[#0f172a] text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
-                                                    <tr><th className="p-4">Personil</th><th className="p-4">Sertifikat</th><th className="p-4 text-center">Status / Sisa Hari</th>{activeView === 'all' && <th className="p-4 text-right">Aksi</th>}</tr>
+                                                    <tr><th className="p-4">Identitas Petugas</th><th className="p-4">Detail Sertifikat</th><th className="p-4 text-center">Masa Berlaku</th>{activeView === 'all' && <th className="p-4 text-right">Aksi</th>}</tr>
                                                 </thead>
                                                 <tbody>
                                                     {tableData.length === 0 ? <tr><td colSpan="4" className="p-8 text-center opacity-50">Tidak ada data</td></tr> :
                                                     tableData.map(c => {
                                                         const st = getStatus(c.tglExpired);
                                                         return (
-                                                            <tr key={c.id} className="border-b border-inherit hover:bg-black/5 transition">
-                                                                <td className="p-4 border-b border-inherit"><div className="font-bold">{c.nama}</div><div className="text-[10px] opacity-60">NIK: {c.ktp}</div><div className="text-[10px] text-violet-500 font-bold">{c.wilayah}</div></td>
-                                                                <td className="p-4 border-b border-inherit"><div className="font-mono text-xs opacity-80 bg-black/5 w-fit px-1 rounded">{c.noSertif}</div><div className="text-[10px] mt-1 font-bold text-orange-400">{c.kualifikasi}</div></td>
+                                                            <tr key={c.id} className="border-b border-inherit hover:bg-black/5 transition group">
+                                                                <td className="p-4 border-b border-inherit">
+                                                                    <div className="font-bold uppercase tracking-tight">{c.nama}</div>
+                                                                    <div className="text-[10px] opacity-60">NIK: {c.ktp}</div>
+                                                                    <div className="text-[10px] text-violet-500 font-black mt-1 uppercase italic">{c.wilayah}</div>
+                                                                </td>
+                                                                <td className="p-4 border-b border-inherit">
+                                                                    <div className="mb-1">
+                                                                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono border ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-slate-100 border-slate-200'}`}>Sertif: {c.noSertif}</span>
+                                                                    </div>
+                                                                    <div className="text-[10px] font-bold text-orange-400 uppercase tracking-tighter">Kual: {c.kualifikasi}</div>
+                                                                    <div className="text-[10px] opacity-60 font-mono">Reg: {c.noReg}</div>
+                                                                    <div className="text-[9px] mt-1 opacity-40 uppercase font-bold italic">Terbit: {c.tahunTerbit}</div>
+                                                                </td>
                                                                 <td className="p-4 border-b border-inherit text-center">
                                                                     <div className={`text-lg font-black leading-none ${st.color}`}>{st.days <= 0 ? 'EXPIRED' : st.days + ' Hari'}</div>
                                                                     <div className={`text-[9px] px-2 py-1 rounded font-black w-fit mx-auto mt-1 ${st.bg} ${st.color}`}>{st.label}</div>
-                                                                    <div className="text-[9px] mt-1 opacity-40 font-mono">{c.tglExpired}</div>
+                                                                    <div className="text-[9px] mt-1 opacity-40 font-mono">Exp: {c.tglExpired}</div>
                                                                 </td>
-                                                                {activeView === 'all' && (<td className="p-4 border-b border-inherit text-right"><button onClick={() => {setForm(c); setEditingId(c.id)}} className="text-violet-500 p-2">✏️</button><button onClick={() => handleDelete(c.id)} className="text-red-500 p-2">🗑️</button></td>)}
+                                                                {activeView === 'all' && (<td className="p-4 border-b border-inherit text-right whitespace-nowrap"><button onClick={() => {setForm(c); setEditingId(c.id)}} className="text-violet-500 p-2 hover:bg-violet-500/10 rounded-xl transition">✏️</button><button onClick={() => handleDelete(c.id)} className="text-red-500 p-2 hover:bg-red-500/10 rounded-xl transition">🗑️</button></td>)}
                                                             </tr>
                                                         )
                                                     })}
@@ -403,7 +399,6 @@
                 </div>
             );
         }
-
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
