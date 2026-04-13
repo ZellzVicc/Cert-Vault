@@ -26,6 +26,13 @@ Cert-Vault is a certificate management application designed to streamline the ha
    ```bash
    php artisan migrate
    ```
+4. php artisan tinker
+$user = new \App\Models\User;
+$user->name = 'Admin Libera';
+$user->email = 'admin@gmail.com';
+$user->password = Hash::make('123');
+$user->role = 'admin';
+$user->save();
 4. Start the local development server:
    ```bash
    php artisan serve
